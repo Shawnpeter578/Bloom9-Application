@@ -50,7 +50,7 @@ class AuthChoiceScreen extends StatelessWidget {
   Navigator.pushReplacement(
     Context,
     MaterialPageRoute(
-      builder: (_) => const Home(),
+      builder: (_) => const Home(weight: '0'),
     ),
   );
 }

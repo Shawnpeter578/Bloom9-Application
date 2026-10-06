@@ -1,8 +1,10 @@
+import 'package:bloom9/screens/book_appointment.dart';
+import 'package:bloom9/screens/emergency_screen.dart';
 import 'package:bloom9/screens/logs.dart';
-import 'package:bloom9/screens/reminders_screen.dart';
+import 'package:bloom9/screens/risk_pred.dart';
 import 'package:bloom9/screens/vitals_trends.dart';
 import 'package:flutter/material.dart';
-import 'package:bloom9/getters and storages/get.dart';
+
 
 // Bloom9 palette — sampled from the app logo
 class Bloom9Colors {
@@ -50,7 +52,7 @@ class HomeScreen extends StatelessWidget {
     required this.babySizeDescription,
     required this.daysToGo,
     required this.dueDateLabel,
-    this.heartRate,
+    required this.heartRate,
     this.weightKg,
     this.weightDeltaKg = 0,
   });
@@ -287,7 +289,7 @@ class HomeScreen extends StatelessWidget {
             value: weightKg != null ? weightKg!.toStringAsFixed(1) : '--',
             unit: 'kg',
             footer: weightKg != null
-                ? '${weightDeltaKg >= 0 ? '+' : ''}${weightDeltaKg.toStringAsFixed(1)} this week'
+                ? 'check the graph'
                 : 'No entries yet',
           ),
         ),
@@ -398,7 +400,13 @@ class HomeScreen extends StatelessWidget {
             // Navigates to your separate screen
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const CheckNowScreen()),
+              MaterialPageRoute(builder: (context) => RiskCheckScreen(
+                service: ApiRiskService(
+                  Uri.parse(
+                      'https://bloom9-ml-api.onrender.com/predict',
+                  )
+                ),
+              )),
             );
           },
           child: Padding(
@@ -423,7 +431,7 @@ class HomeScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Symptom Checker',
+                        'Pregnancy Risk Assessment',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -432,7 +440,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 4),
                       Text(
-                        'Feeling unwell? Log it now.',
+                        'Feeling unwell, check your risk',
                         style: TextStyle(
                           fontSize: 13,
                           color: Bloom9Colors.textSecondary,
@@ -492,10 +500,10 @@ Widget _buildQuickActionsRow(BuildContext context) {
               
               // Water 
               _quickAction(
-                icon: Icons.water_drop_rounded,
+                icon: Icons.medical_information,
                 color: const Color(0xFF4CA5E2),
-                label: 'Water',
-                onTap: () => print("Water tapped"),
+                label: 'Appointments',
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (ctx)=> AppointmentBookingScreen())),
               ),
               const SizedBox(width: 20),
               
@@ -504,7 +512,7 @@ Widget _buildQuickActionsRow(BuildContext context) {
                 icon: Icons.emergency_rounded, 
                 color: Bloom9Colors.coral,
                 label: 'SOS',
-                onTap: () => print("SOS tapped"),
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (ctx)=> EmergencyScreen())),
               ),
             ],
           ),

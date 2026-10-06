@@ -64,7 +64,7 @@ Future<void> setupPushNotification() async {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) =>  Home(),
+          builder: (_) =>  Home(weight: '0',),
         ),
       );
     } else {

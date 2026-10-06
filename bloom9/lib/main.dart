@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
 
     print("Logged in as ${user.email}");
 
-    return Home();
+    return Home(weight: '0',);
   } on AppwriteException catch (e) {
     print(e.message);
     return const AuthChoiceScreen();
@@ -75,7 +75,7 @@ home: FutureBuilder(
     final user = snapshot.data!;
     print("Logged in: ${user.email}");
 
-    return Home();
+    return Home(weight:'0',);
   },
 ),
 );

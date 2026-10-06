@@ -4,34 +4,82 @@ class WatchService {
   final Health health = Health();
 
   Future<int?> getHeartRate() async {
-    final types = [HealthDataType.HEART_RATE];
-    final permissions = [HealthDataAccess.READ];
+    try {
+      const types = [
+        HealthDataType.HEART_RATE,
+      ];
 
-    print("Requesting Health permission...");
+      const permissions = [
+        HealthDataAccess.READ,
+      ];
 
-    await health.configure();
+      print('==============================');
+      print('Bloom9: Requesting heart rate');
+      print('==============================');
 
-final granted = await health.requestAuthorization(
-  types,
-  permissions: permissions,
-);
-    print("Permission granted: $granted");
+      await health.configure();
 
-    if (!granted) return null;
+      final authorized = await health.requestAuthorization(
+        types,
+        permissions: permissions,
+      );
 
-    final now = DateTime.now();
-    final yesterday = now.subtract(const Duration(days: 1));
+      print('Health authorization: $authorized');
 
-    final data = await health.getHealthDataFromTypes(
-      startTime: yesterday,
-      endTime: now,
-      types: types,
-    );
+      if (!authorized) {
+        print('❌ Heart-rate permission denied');
+        return null;
+      }
 
-    if (data.isEmpty) return null;
+      final now = DateTime.now();
+      final startTime = now.subtract(
+        const Duration(hours: 24),
+      );
 
-    return (data.last.value as NumericHealthValue)
-        .numericValue
-        .round();
+      final data = await health.getHealthDataFromTypes(
+        startTime: startTime,
+        endTime: now,
+        types: types,
+      );
+
+      print('Heart-rate records found: ${data.length}');
+
+      if (data.isEmpty) {
+        print('❌ No heart-rate data found');
+        return null;
+      }
+
+      // Remove duplicate records
+      final cleanData = health.removeDuplicates(data);
+
+      // Sort newest last
+      cleanData.sort(
+        (a, b) => a.dateTo.compareTo(b.dateTo),
+      );
+
+      final latest = cleanData.last;
+
+      print('Latest heart-rate timestamp: ${latest.dateTo}');
+
+      if (latest.value is NumericHealthValue) {
+        final value =
+            (latest.value as NumericHealthValue).numericValue;
+
+        final bpm = value.round();
+
+        print('❤️ BLOOM9 HEART RATE: $bpm BPM');
+
+        return bpm;
+      }
+
+      print('❌ Heart-rate value was not numeric');
+
+      return null;
+    } catch (e, stackTrace) {
+      print('❌ Heart-rate error: $e');
+      print(stackTrace);
+
+      return null;
+    }
   }
 }

@@ -92,7 +92,7 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
       },
     );
 
-    Navigator.of(context).pushReplacement(MaterialPageRoute( builder: (_) => const OnboardingScreen(),
+    Navigator.of(context).pushReplacement(MaterialPageRoute( builder: (_) =>  OnboardingScreen(weight: weightController.text,),
       ),
     );
   } on AppwriteException catch (e) {

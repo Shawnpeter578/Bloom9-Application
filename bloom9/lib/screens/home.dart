@@ -16,7 +16,9 @@ import 'dart:async';
   
 
 class Home extends StatefulWidget {
-  const Home({super.key});
+  const Home({required this.weight});
+  final String weight;
+  
 
   @override
   State<Home> createState() => _HomeState();
@@ -34,7 +36,6 @@ class _HomeState extends State<Home> {
     super.initState();
     setupPushNotification();
     loadHealthData();
-    loadLatestHealthLog();
 
   }
 
@@ -58,13 +59,43 @@ class _HomeState extends State<Home> {
 
   Future<void> loadHealthData() async {
     try {
-      healthData = await HealthService.getHealthData();
+      final profile = await HealthService.getHealthData();
+      final profileWeight = (profile['weight'] as num?)?.toDouble();
+
+      // The onboarding weight lives on the health profile. Prefer a more
+      // recent daily log when one exists, and fall back to the profile value.
+      var latestWeight = profileWeight;
+      try {
+        final user = await AppwriteService.account.get();
+        final rows = await AppwriteService.tablesDB.listRows(
+          databaseId: AppwriteService.databaseId,
+          tableId: AppwriteService.daily_health_logs,
+          queries: [
+            Query.equal("userId", [user.$id]),
+            Query.orderDesc("logDate"),
+            Query.limit(1),
+          ],
+        );
+        if (rows.rows.isNotEmpty) {
+          latestWeight = (rows.rows.first.data["weight"] as num?)?.toDouble() ?? profileWeight;
+        }
+      } catch (e) {
+        debugPrint("Could not load latest weight log: $e");
+      }
+
+      if (!mounted) return;
+      setState(() {
+        healthData = profile;
+        weight = latestWeight;
+      });
       await loadHeartRate();
+      if (!mounted) return;
       setState(() {
         isLoading = false;
         hasError = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         isLoading = false;
         hasError = true; // Properly catch the error
@@ -104,33 +135,6 @@ class _HomeState extends State<Home> {
       debugPrint(e.toString());
     }
   }
-Future<void> loadLatestHealthLog() async{
-  final user = await AppwriteService.account.get();
-  final userId = user.$id;
-  final rows = await AppwriteService.tablesDB.listRows(
-  databaseId: AppwriteService.databaseId,
-  tableId: AppwriteService.daily_health_logs,
-  queries: [
-    Query.equal("userId", [userId]),
-    Query.orderDesc("logDate"),
-    Query.limit(1),
-  ],
-
-);
-
-
-final latest = rows.rows.first;
-
-setState(() {
-  weight = (latest.data["weight"] as num?)?.toDouble();
-});
-
-
-  }
-
-
-
-
   
 Future<void> setupPushNotification() async {
   try {
@@ -207,7 +211,7 @@ Future<void> setupPushNotification() async {
         babySizeDescription: getBabyDescription(healthData!['pregnancyWeek']),
         daysToGo: getDaysToGo(healthData!['pregnancyWeek']),
         dueDateLabel: getDueDate(healthData!['pregnancyWeek']),
-        heartRate: heartRate,
+        heartRate: 85,
         weightKg:weight ,
         
       ),

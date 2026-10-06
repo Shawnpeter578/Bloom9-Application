@@ -2,14 +2,15 @@ import 'package:bloom9/screens/home.dart';
 import 'package:flutter/material.dart';
 
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({super.key});
-
+  const OnboardingScreen({super.key, required this.weight});
+  final String weight;
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _controller = PageController();
+
 
   int _currentPage = 0;
 
@@ -56,7 +57,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx)=> Home()));
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx)=> Home( weight:widget.weight,)));
                   },
                   child: const Text("Skip"),
                 ),
@@ -153,7 +154,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (isLastPage) {
-                      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx)=> Home()));
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx)=> Home(weight: widget.weight,)));
                     } else {
                       _controller.nextPage(
                         duration: const Duration(milliseconds: 300),
